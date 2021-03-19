@@ -63,6 +63,8 @@ class BaseDisentangler(object):
         self.image_size = args.image_size
         self.aicrowd_challenge = args.aicrowd_challenge
 
+        self.loss_txt = args.loss_txt
+
         from common.data_loader import get_dataloader
         self.data_loader = get_dataloader(args.dset_name, args.dset_dir, args.batch_size, args.seed, args.num_workers,
                                           args.image_size, args.include_labels, args.pin_memory, not args.test,
@@ -137,7 +139,7 @@ class BaseDisentangler(object):
         if self.use_wandb:
             import wandb
             resume_wandb = True if args.wandb_resume_id else False
-            wandb.init(config=args, resume=resume_wandb, id=args.wandb_resume_id, project=c.WANDB_NAME,
+            wandb.init(config=args, resume=resume_wandb, id=args.wandb_resume_id, project=args.wandb_project_name,
                        name=args.name)
 
         # Checkpoint
@@ -170,8 +172,20 @@ class BaseDisentangler(object):
         self.lambda_d_factor = args.lambda_d_factor
         self.lambda_d = self.lambda_d_factor * self.lambda_od
 
-    def log_save(self, **kwargs):
+        # bandit
+        self.use_bandit = args.use_bandit
+        self.lr_bandit = args.lr_bandit
+        self.qma_alpha = args.qma_alpha
+        self.boltzmann_lambda = args.boltzmann_lambda
+        self.use_bandit = args.use_bandit
+
+
+    def log_save(self,internal_iter, **kwargs):
         self.step()
+        if self.use_wandb:
+            import wandb
+            for key, value in kwargs.get('loss', dict()).items():
+                    wandb.log({'loss.'+key: value, 'custom_step': internal_iter})
 
         # don't log anything if running on the aicrowd_server
         if self.on_aicrowd_server:
@@ -189,7 +203,7 @@ class BaseDisentangler(object):
                 msg += '{}_{}={:.3f}  '.format(c.ACCURACY, key, value)
             self.pbar.write(msg)
 
-        # visualize the reconstruction of the current batch every recon_iter
+        # visualize the reconstruction of the current batch every recon_iter    
         if is_time_for(self.iter, self.recon_iter):
             self.visualize_recon(kwargs[c.INPUT_IMAGE], kwargs[c.RECON_IMAGE])
 
@@ -200,8 +214,12 @@ class BaseDisentangler(object):
         # if any evaluation is included in args.evaluate_metric, evaluate every evaluate_iter
         if self.evaluation_metric and is_time_for(self.iter, self.evaluate_iter):
             self.evaluate_results = evaluate_disentanglement_metric(self, metric_names=self.evaluation_metric)
+            #if self.use_wandb:
+                #import wandb
+                #wandb.log(self.evaluate_results)
+            
 
-        # log scalar values using wandb
+        # log scalar values using wandbs
         if is_time_for(self.iter, self.float_iter):
             # average results
             for key, value in self.info_cumulative.items():
@@ -218,7 +236,7 @@ class BaseDisentangler(object):
 
             if self.use_wandb:
                 import wandb
-                wandb.log(self.info_cumulative, step=self.iter)
+                wandb.log(self.info_cumulative)
 
             # empty info_cumulative
             for key, value in self.info_cumulative.items():
@@ -256,8 +274,8 @@ class BaseDisentangler(object):
 
         if self.use_wandb:
             import wandb
-            wandb.log({c.RECON_IMAGE: wandb.Image(samples, caption=str(self.iter))},
-                      step=self.iter)
+
+            wandb.log({c.RECON_IMAGE: wandb.Image(samples , caption=str(self.iter)), 'custom_step':self.iter})
 
     def visualize_traverse(self, limit: tuple, spacing, data=None, test=False):
         self.net_mode(train=False)
@@ -341,8 +359,9 @@ class BaseDisentangler(object):
             if self.use_wandb:
                 import wandb
                 title = '{}_{}_iter:{}'.format(c.TRAVERSE, key, self.iter)
-                wandb.log({'{}_{}'.format(c.TRAVERSE, key): wandb.Image(samples, caption=title)},
-                          step=self.iter)
+
+                wandb.log({'{}_{}'.format(c.TRAVERSE, key): wandb.Image(samples, caption=title),
+                          'custom_step':self.iter})
 
         if self.gif_save and len(gifs) > 0:
             total_rows = self.num_labels * self.l_dim + \
@@ -523,3 +542,108 @@ class BaseDisentangler(object):
     def setup_schedulers(self, lr_scheduler, lr_scheduler_args, w_recon_scheduler, w_recon_scheduler_args):
         self.lr_scheduler = get_scheduler(self.optim_G, lr_scheduler, lr_scheduler_args)
         self.w_recon_scheduler = get_scheduler(self.w_recon, w_recon_scheduler, w_recon_scheduler_args)
+
+###################################################################################################################
+#############################################BANDIT################################################################
+###################################################################################################################
+
+
+    def log_save_bandit(self, internal_iter, loss, prev_loss, rewards, Q, pi, **kwargs):
+        #self, internal_iter, loss, prev_loss, rewards, Q, pi
+        self.step()
+        if self.use_wandb:
+            import wandb
+            wandb.log({'loss[0]: ':loss[0], 'loss[1]: ':loss[1],  'custom_step': internal_iter}) #, 'loss[2]: ':loss[2], 'loss[3]: ':loss[3], 'loss[4]: ':loss[4], 'loss[5]: ':loss[5], 'custom_step': internal_iter})
+            wandb.log({'prev_loss[0]: ':prev_loss[0], 'prev_loss[1]: ':prev_loss[1],  'custom_step': internal_iter}) #, 'prev_loss[2]: ':prev_loss[2], 'prev_loss[3]: ':prev_loss[3], 'prev_loss[4]: ':prev_loss[4], 'prev_loss[5]: ':prev_loss[5], 'custom_step': internal_iter})
+            wandb.log({'rewards[0]: ':rewards[0], 'rewards[1]: ':rewards[1],  'custom_step': internal_iter}) #, 'rewards[2]: ':rewards[2], 'rewards[3]: ':rewards[3], 'rewards[4]: ':rewards[4], 'rewards[5]: ':rewards[5], 'custom_step': internal_iter})
+            wandb.log({'Q[0]: ':Q[0], 'Q[1]: ':Q[1],  'custom_step': internal_iter}) #, 'Q[2]: ':Q[2], 'Q[3]: ':Q[3], 'Q[4]: ':Q[4], 'Q[5]: ':Q[5], 'custom_step': internal_iter})
+            wandb.log({'pi[0]: ':pi[0], 'pi[1]: ':pi[1],  'custom_step': internal_iter}) #, 'pi[2]: ':pi[2], 'pi[3]: ':pi[3], 'pi[4]: ':pi[4], 'pi[5]: ':pi[5], 'custom_step': internal_iter})
+            #wandb.log({'pi_update[0]: ':pi_update[0], 'pi_update[1]: ':pi_update[1], 'pi_update[2]: ':pi_update[2], 'pi_update[3]: ':pi_update[3], 'pi_update[4]: ':pi_update[4], 'pi_update[5]: ':pi_update[5], 'custom_step': internal_iter})
+
+
+
+        if self.on_aicrowd_server:
+            return
+
+        # save a checkpoint every ckpt_save_iter
+        if is_time_for(self.iter, self.ckpt_save_iter):
+            self.save_checkpoint()
+
+        if is_time_for(self.iter, self.print_iter):
+            msg = '[{}:{}]  '.format(self.epoch, self.iter)
+            for key, value in kwargs.get(c.LOSS, dict()).items():
+                msg += '{}_{}={:.3f}  '.format(c.LOSS, key, value)
+            for key, value in kwargs.get(c.ACCURACY, dict()).items():
+                msg += '{}_{}={:.3f}  '.format(c.ACCURACY, key, value)
+            self.pbar.write(msg)
+
+        # visualize the reconstruction of the current batch every recon_iter
+        if is_time_for(self.iter, self.recon_iter):
+            self.visualize_recon(kwargs[c.INPUT_IMAGE], kwargs[c.RECON_IMAGE])
+
+        # traverse the latent factors every traverse_iter
+        if is_time_for(self.iter, self.traverse_iter):
+            self.visualize_traverse(limit=(self.traverse_min, self.traverse_max), spacing=self.traverse_spacing)
+
+        # if any evaluation is included in args.evaluate_metric, evaluate every evaluate_iter
+        if self.evaluation_metric and is_time_for(self.iter, self.evaluate_iter):
+            self.evaluate_results = evaluate_disentanglement_metric(self, metric_names=self.evaluation_metric)
+
+        # log scalar values using wandb
+        if is_time_for(self.iter, self.float_iter):
+            # average results
+            for key, value in self.info_cumulative.items():
+                self.info_cumulative[key] /= self.float_iter
+
+            # other values to log
+            self.info_cumulative[c.ITERATION] = self.iter
+            self.info_cumulative[c.LEARNING_RATE] = get_lr(self.optim_dict['optim_G'])  # assuming we want optim_G
+
+            # todo: not happy with this architecture for logging... should make it easier to add new variables to log
+            if self.evaluation_metric:
+                for key, value in self.evaluate_results.items():
+                    self.info_cumulative[key] = value
+
+            if self.use_wandb:
+                import wandb
+                wandb.log(self.info_cumulative)
+
+            # empty info_cumulative
+            for key, value in self.info_cumulative.items():
+                self.info_cumulative[key] = 0
+        else:
+            # accumulate results
+            for key, value in kwargs.items():
+                if isinstance(value, float):
+                    self.info_cumulative[key] = value + self.info_cumulative.get(key, 0)
+                elif isinstance(value, dict):
+                    for subkey, subvalue in value.items():
+                        complex_key = key + '/' + subkey
+                        self.info_cumulative[complex_key] = float(subvalue) + self.info_cumulative.get(complex_key, 0)
+
+        # update schedulers
+        if is_time_for(self.iter, self.schedulers_iter):
+            self.schedulers_step(kwargs.get(c.LOSS, dict()).get(c.TOTAL_VAE_EPOCH, 0),
+                                 self.iter // self.schedulers_iter)
+
+
+    def visualize_recon(self, input_image, recon_image, test=False):
+        input_image = torchvision.utils.make_grid(input_image)
+        recon_image = torchvision.utils.make_grid(recon_image)
+
+        if self.white_line is None:
+            self.white_line = torch.ones((3, input_image.size(1), 10)).to(self.device)
+
+        samples = torch.cat([input_image, self.white_line, recon_image], dim=2)
+
+        if self.file_save:
+            if test:
+                file_name = os.path.join(self.test_output_dir, '{}_{}.{}'.format(c.RECON, self.iter, c.JPG))
+            else:
+                file_name = os.path.join(self.train_output_dir, '{}.{}'.format(c.RECON, c.JPG))
+            torchvision.utils.save_image(samples, file_name)
+
+        if self.use_wandb:
+            import wandb
+            wandb.log({c.RECON_IMAGE: wandb.Image(samples, caption=str(self.iter)),
+                      'custom_step': self.iter})  

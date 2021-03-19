@@ -141,6 +141,7 @@ class VAE(BaseDisentangler):
             output_losses['vae_betatc'] = betatcvae_loss_fn(self.w_tc, **kwargs)
             output_losses[c.TOTAL_VAE] += output_losses['vae_betatc']
 
+
         if c.INFOVAE in self.loss_terms:
             from models.infovae import infovae_loss_fn
             output_losses['vae_mmd'] = infovae_loss_fn(self.w_infovae, self.z_dim, self.device, **kwargs)
@@ -154,7 +155,6 @@ class VAE(BaseDisentangler):
         x_recon = self.model.decode(z=z, c=label1)
         loss_fn_args = dict(x_recon=x_recon, x_true=x_true1, mu=mu, logvar=logvar, z=z,
                             x_true2=x_true2, label2=label2)
-
         losses.update(self.loss_fn(losses, **loss_fn_args))
         return losses, {'x_recon': x_recon, 'mu': mu, 'z': z, 'logvar': logvar}
 
@@ -162,23 +162,33 @@ class VAE(BaseDisentangler):
         while not self.training_complete():
             self.net_mode(train=True)
             vae_loss_sum = 0
-            for internal_iter, (x_true1, label1) in enumerate(self.data_loader):
+            losslist = []
+            for self.internal_iter, (x_true1, label1) in enumerate(self.data_loader):
                 losses = dict()
                 x_true1 = x_true1.to(self.device)
                 label1 = label1.to(self.device)
                 x_true2, label2 = next(iter(self.data_loader))
                 x_true2 = x_true2.to(self.device)
                 label2 = label2.to(self.device)
-
                 losses, params = self.vae_base(losses, x_true1, x_true2, label1, label2)
 
                 self.optim_G.zero_grad()
                 losses[c.TOTAL_VAE].backward(retain_graph=False)
                 vae_loss_sum += losses[c.TOTAL_VAE]
-                losses[c.TOTAL_VAE_EPOCH] = vae_loss_sum / internal_iter
+                losses[c.TOTAL_VAE_EPOCH] = vae_loss_sum / self.internal_iter
 
                 self.optim_G.step()
-                self.log_save(input_image=x_true1, recon_image=params['x_recon'], loss=losses)
+                self.log_save(self.internal_iter,input_image=x_true1, recon_image=params['x_recon'], loss=losses)
+                del self.internal_iter
+                if self.loss_txt:
+                    f1 = open(str(self.name)+'.recon.txt','a')
+                    f1.writelines(str(losses['recon'].item()))
+                    f1.close()
+
+                    f2 = open(str(self.name)+'.kld.txt','a')
+                    f2.writelines(str(losses['kld'].item()) )
+                    f2.close()
+        del losses
             # end of epoch
         self.pbar.close()
 
@@ -196,3 +206,113 @@ class VAE(BaseDisentangler):
 
             self.iter += 1
             self.pbar.update(1)
+
+###################################################################################################################
+#############################################BANDIT################################################################
+###################################################################################################################
+
+    def loss_fn_bandit(self, input_losses, **kwargs):
+        x_recon = kwargs['x_recon']
+        x_true = kwargs['x_true']
+        mu = kwargs['mu']
+        logvar = kwargs['logvar']
+
+        bs = self.batch_size
+        output_losses = torch.zeros(2, dtype=torch.float, device = self.device)
+
+
+        output_losses[0] = (F.binary_cross_entropy(x_recon, x_true, reduction='sum') / bs * self.w_recon)
+        output_losses[1] = (self._kld_loss_fn(mu, logvar))
+
+        from models.dipvae import dipvaei_loss_fn
+        #output_losses[2] = (dipvaei_loss_fn(self.w_dipvae, self.lambda_od, self.lambda_d, **kwargs))
+
+        
+        #if c.DIPVAEII in self.loss_terms:
+        from models.dipvae import dipvaeii_loss_fn
+        #output_losses[3] = (dipvaeii_loss_fn(self.w_dipvae, self.lambda_od, self.lambda_d, **kwargs))
+
+        
+        #if c.BetaTCVAE in self.loss_terms:
+        from models.betatcvae import betatcvae_loss_fn
+        #output_losses[4] = (betatcvae_loss_fn(self.w_tc, **kwargs))
+
+
+        #if c.INFOVAE in self.loss_terms:
+        from models.infovae import infovae_loss_fn
+        #output_losses[5] = (infovae_loss_fn(self.w_infovae, self.z_dim, self.device, **kwargs))
+        return output_losses
+
+    def vae_base_bandit(self, losses, x_true1, x_true2, label1, label2):
+        mu, logvar = self.model.encode(x=x_true1, c=label1)
+        z = reparametrize(mu, logvar)
+        x_recon = self.model.decode(z=z, c=label1)
+        loss_fn_args = dict(x_recon=x_recon, x_true=x_true1, mu=mu, logvar=logvar, z=z,
+                            x_true2=x_true2, label2=label2)
+        losses = (self.loss_fn_bandit(losses, **loss_fn_args))
+        return losses, {'x_recon': x_recon, 'mu': mu, 'z': z, 'logvar': logvar}
+    
+    
+    
+    def update_rewards(self, L, prev_L, lr_bandit):
+    
+        dL = L - prev_L
+        update = (lr_bandit*dL.to('cpu'))
+
+        return update
+
+    def update_Q(self, rewards, Q, qma_alpha):
+        '''
+        smoothing of reward for numerical stability
+        '''
+        Q = (qma_alpha * rewards + (1 - qma_alpha) * Q)
+        return Q
+
+    def update_pi(self, Q,boltzmann_lambda):
+        pi =  F.softmax(boltzmann_lambda * Q, dim=0)
+        return pi
+
+    def train_bandit(self):
+        #assert self.use_bandit == True
+        while not self.training_complete():
+
+            self.net_mode(train=True)
+            vae_loss_sum = 0
+            losses = torch.zeros(2, dtype=torch.float, device = self.device)
+            prev_losses = torch.zeros(2, dtype=torch.float)
+            rewards = torch.zeros(2, dtype=torch.float)
+            Q = torch.zeros(2, dtype=torch.float)
+            pi = (1/2)*torch.ones(2, dtype=torch.float, device = self.device)
+        
+            for internal_iter, (x_true1, label1) in enumerate(self.data_loader):
+
+                x_true1 = x_true1.to(self.device)
+                label1 = label1.to(self.device)
+                x_true2, label2 = next(iter(self.data_loader))
+                x_true2 = x_true2.to(self.device)
+                label2 = label2.to(self.device)
+                prev_losses = losses.detach()
+                losses, params = self.vae_base_bandit(losses, x_true1, x_true2, label1, label2)
+                rewards = rewards + self.update_rewards(losses, prev_losses,self.lr_bandit)
+                Q = self.update_Q(rewards, Q,self.qma_alpha).detach()
+                pi = self.update_pi(Q,self.boltzmann_lambda).detach()
+                L = torch.dot(losses,pi.to(self.device)) 
+                #L = torch.sum(losses)
+                self.optim_G.zero_grad()
+
+                L.backward(retain_graph=False)
+                vae_loss_sum += L
+                #losses[c.TOTAL_VAE_EPOCH] = vae_loss_sum / internal_iter
+                self.optim_G.step()
+
+            
+                #self.log_save_bandit(internal_iter, losses, prev_losses, rewards, Q, pi, input_image=x_true1, recon_image=params['x_recon'])
+                self.log_save_bandit(internal_iter, losses, prev_losses, rewards, Q, pi, input_image=x_true1, recon_image=params['x_recon'])
+                #del prev_losses
+                del pi
+                del L
+                del internal_iter
+               
+
+            # end of epoch
+        self.pbar.close()

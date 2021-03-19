@@ -8,7 +8,7 @@ from common.utils import str2bool, StoreDictKeyPair
 
 def update_args(args):
     args.ckpt_load_iternum = False
-    args.use_wandb = False
+    args.use_wandb = True
     args.file_save = True
     args.gif_save = True
     return args
@@ -23,10 +23,10 @@ def get_args(sys_args):
                         help='Metric to evaluate the model during training')
 
     # name
-    parser.add_argument('--alg', type=str, help='the disentanglement algorithm', choices=c.ALGS)
+    parser.add_argument('--alg',default ='BetaVAE', type=str, help='the disentanglement algorithm', choices=c.ALGS)
     parser.add_argument('--controlled_capacity_increase', help='to use controlled capacity increase', default=False)
     parser.add_argument('--loss_terms', help='loss terms to be incldued in the objective', nargs='*',
-                        default=list(), choices=c.LOSS_TERMS)
+                         choices=c.LOSS_TERMS)
     parser.add_argument('--name', default='unknown_experiment', type=str, help='name of the experiment')
 
     # Neural architectures
@@ -100,7 +100,7 @@ def get_args(sys_args):
                         type=str, help='main dataset directory')
     parser.add_argument('--dset_name', default=None, type=str, help='dataset name')
     parser.add_argument('--image_size', default=64, type=int, help='width and height of image')
-    parser.add_argument('--num_workers', default=1, type=int, help='number of workers for the data loader')
+    parser.add_argument('--num_workers', default=2, type=int, help='number of workers for the data loader')
     parser.add_argument('--pin_memory', default=True, type=str2bool,
                         help='pin_memory flag of data loader. Check this blogpost for details:'
                              'https://devblogs.nvidia.com/how-optimize-data-transfers-cuda-cc/')
@@ -110,15 +110,16 @@ def get_args(sys_args):
     parser.add_argument('--test_output_dir', default='test_outputs', type=str, help='test output directory')
     parser.add_argument('--file_save', default=True, type=str2bool, help='whether to save generated images to file')
     parser.add_argument('--gif_save', default=True, type=str2bool, help='whether to save generated GIFs to file')
-    parser.add_argument('--use_wandb', default=False, type=str2bool, help='use wandb for logging')
+    parser.add_argument('--use_wandb', default=True, type=str2bool, help='use wandb for logging')
     parser.add_argument('--wandb_resume_id', default=None, type=str, help='resume previous wandb run with id')
+    parser.add_argument('--wandb_project_name', default='final', type=str, help='wandb project name')
     parser.add_argument('--traverse_spacing', default=0.2, type=float, help='spacing to traverse latents')
     parser.add_argument('--traverse_min', default=-2, type=float, help='min limit to traverse latents')
     parser.add_argument('--traverse_max', default=+2, type=float, help='max limit to traverse latents')
-    parser.add_argument('--traverse_z', default=False, type=str2bool, help='whether to traverse the z space')
-    parser.add_argument('--traverse_l', default=False, type=str2bool, help='whether to traverse the l space')
-    parser.add_argument('--traverse_c', default=False, type=str2bool, help='whether to traverse the condition')
-    parser.add_argument('--verbose', default=20, type=int, help='verbosity level')
+    parser.add_argument('--traverse_z', default=True, type=str2bool, help='whether to traverse the z space')
+    parser.add_argument('--traverse_l', default=True, type=str2bool, help='whether to traverse the l space')
+    parser.add_argument('--traverse_c', default=True, type=str2bool, help='whether to traverse the condition')
+    parser.add_argument('--verbose', default=100, type=int, help='verbosity level')
 
     # Save/Load checkpoint
     parser.add_argument('--ckpt_dir', default='checkpoints', type=str, help='checkpoint directory')
@@ -149,6 +150,18 @@ def get_args(sys_args):
 
     # Other
     parser.add_argument('--seed', default=123, type=int, help='Seed value for torch, cuda, and numpy.')
+
+###################################################################################################################
+#############################################BANDIT################################################################
+###################################################################################################################
+    parser.add_argument('--loss_txt', type=str2bool, help='produces text file of losses')
+    parser.add_argument('--use_bandit', type=str2bool, help='use bandit overlay')
+    parser.add_argument('--pi_iter', default=1000, help='how often bandit policy pi is updated')
+    parser.add_argument('--lr_bandit', default=1e-2, help='learning rate for bandit reward update')
+    parser.add_argument('--log_iter', default=1, help='how often to log bandit')
+    parser.add_argument('--choose_arm', default=False, type=str2bool, help='Actually select arm of bandit')
+    parser.add_argument('--qma_alpha', default=0.1, type=float, help='moving average coefficient for Q')
+    parser.add_argument('--boltzmann_lambda', default=15, type=float, help='boltzmann constant for policy update')
 
     args = parser.parse_args(sys_args)
 
