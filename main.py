@@ -34,7 +34,10 @@ def main(_args):
 
     # run test or train
     if not _args.test:
-        model.train()
+        if _args.use_bandit:
+            model.train_bandit()
+        else:
+            model.train()
     else:
         model.test()
 

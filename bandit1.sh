@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=bandit1
-#SBATCH --output=/home-mscluster/npather/orig_test3/disentanglement-pytorch/bandit1.%A_%a.txt
+#SBATCH --output=/home-mscluster/npather/disentangle/bandit1.%A_%a.txt
 #SBATCH --partition=stampede
 #SBATCH --array=0-5
 python3 main.py \
@@ -33,7 +33,7 @@ python3 main.py \
 --use_bandit=true \
 --controlled_capacity_increase=false \
 --loss_txt=false \
---wandb_project_name=test \
+--wandb_project_name=experiment0  \
 
 
 
