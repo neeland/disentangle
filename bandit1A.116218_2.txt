@@ -1,0 +1,10 @@
+  0%|          | 0/90000 [00:00<?, ?it/s]wandb: Currently logged in as: neonkitchen (use `wandb login --relogin` to force relogin)
+wandb: wandb version 0.10.23 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.10.20
+wandb: Syncing run bandit1A
+wandb: ⭐️ View project at https://wandb.ai/neonkitchen/experiment0seed
+wandb: 🚀 View run at https://wandb.ai/neonkitchen/experiment0seed/runs/8wjw6r7x
+wandb: Run data is saved locally in /home-mscluster/npather/disentangle/wandb/run-20210323_185931-8wjw6r7x
+wandb: Run `wandb offline` to turn off syncing.
+  0%|          | 1/90000 [00:10<269:43:17, 10.79s/it]  0%|          | 2/90000 [00:12<202:53:06,  8.12s/it]  0%|          | 3/90000 [00:14<156:01:55,  6.24s/it]  0%|          | 4/90000 [00:16<123:37:14,  4.95s/it]  0%|          | 5/90000 [00:18<100:53:59,  4.04s/it]  0%|          | 6/90000 [00:20<84:38:59,  3.39s/it]   0%|          | 7/90000 [00:22<73:31:48,  2.94s/it]  0%|          | 8/90000 [00:24<65:47:38,  2.63s/it]  0%|          | 9/90000 [00:25<60:29:56,  2.42s/it]  0%|          | 10/90000 [00:27<57:00:54,  2.28s/it]  0%|          | 11/90000 [00:29<54:47:54,  2.19s/it]  0%|          | 12/90000 [00:31<52:36:46,  2.10s/it]  0%|          | 13/90000 [00:33<50:52:55,  2.04s/it]  0%|          | 14/90000 [00:35<50:09:07,  2.01s/it]  0%|          | 15/90000 [00:37<50:04:26,  2.00s/it]  0%|          | 16/90000 [00:39<49:37:42,  1.99s/it]  0%|          | 17/90000 [00:41<49:05:36,  1.96s/it]slurmstepd-mscluster63: error: *** JOB 116224 ON mscluster63 CANCELLED AT 2021-03-23T19:00:11 ***

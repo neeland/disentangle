@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=bandit3_a2
-#SBATCH --output=/home-mscluster/npather/orig_test3/disentanglement-pytorch/bandit3_a2.%A_%a.txt
+#SBATCH --job-name=bandit3a05
+#SBATCH --output=/home-mscluster/npather/orig_test3/disentanglement-pytorch/bandit3a05.%A_%a.txt
 #SBATCH --partition=stampede
 #SBATCH --array=0-5
 python3 main.py \
 --aicrowd_challenge=false \
---name=bandit3_a2 \
+--name=bandit3a05 \
 --alg=BetaVAE \
 --traverse_z=true \
 --traverse_c=true \
@@ -33,8 +33,9 @@ python3 main.py \
 --use_bandit=true \
 --controlled_capacity_increase=false \
 --loss_txt=false \
---wandb_project_name=alphaSweepseed \
---qma_alpha=0.2 \
+--wandb_project_name=experiment0seed  \
+--qma_alpha=0.05 \
 --boltzmann_lambda=15 \
+
 
 

@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=base9
-#SBATCH --output=/home-mscluster/npather/orig_test3/disentanglement-pytorch/base9.%A_%a.txt
+#SBATCH --job-name=base9A
+#SBATCH --output=/home-mscluster/npather/orig_test3/disentanglement-pytorch/base9A.%A_%a.txt
 #SBATCH --partition=stampede
 #SBATCH --array=0-5
 python3 main.py \
 --aicrowd_challenge=false \
---name=base9 \
+--name=base9A \
 --alg=BetaVAE \
 --traverse_z=true \
 --traverse_c=true \
@@ -33,7 +33,10 @@ python3 main.py \
 --use_bandit=false \
 --controlled_capacity_increase=false \
 --loss_txt=false \
---wandb_project_name=experiment0  \
+--wandb_project_name=experiment0seed  \
+--qma_alpha=0.001 \
+--boltzmann_lambda=15 \
+
 
 
 

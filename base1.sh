@@ -33,7 +33,7 @@ python3 main.py \
 --use_bandit=false \
 --controlled_capacity_increase=false \
 --loss_txt=false \
---wandb_project_name=experiment0  \
+--wandb_project_name=experiment0seed  \
 
 
 

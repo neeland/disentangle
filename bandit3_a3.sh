@@ -33,7 +33,7 @@ python3 main.py \
 --use_bandit=true \
 --controlled_capacity_increase=false \
 --loss_txt=false \
---wandb_project_name=alphaSweep  \
+--wandb_project_name=alphaSweepseed  \
 --qma_alpha=0.3 \
 --boltzmann_lambda=15 \
 

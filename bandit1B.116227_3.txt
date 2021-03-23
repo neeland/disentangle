@@ -1,0 +1,10 @@
+  0%|          | 0/90000 [00:00<?, ?it/s]wandb: Currently logged in as: neonkitchen (use `wandb login --relogin` to force relogin)
+wandb: wandb version 0.10.23 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.10.20
+wandb: Syncing run bandit1B
+wandb: ⭐️ View project at https://wandb.ai/neonkitchen/experiment0seed
+wandb: 🚀 View run at https://wandb.ai/neonkitchen/experiment0seed/runs/3arkhz88
+wandb: Run data is saved locally in /home-mscluster/npather/disentangle/wandb/run-20210323_190504-3arkhz88
+wandb: Run `wandb offline` to turn off syncing.
+  0%|          | 1/90000 [00:25<627:54:41, 25.12s/it]  0%|          | 2/90000 [00:27<458:00:05, 18.32s/it]  0%|          | 3/90000 [00:29<335:58:23, 13.44s/it]  0%|          | 4/90000 [00:31<252:01:34, 10.08s/it]  0%|          | 5/90000 [00:33<191:24:33,  7.66s/it]  0%|          | 6/90000 [00:36<150:34:15,  6.02s/it]
