@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=bandit3
-#SBATCH --output=/home-mscluster/npather/orig_test3/disentanglement-pytorch/bandit3.%A_%a.txt
+#SBATCH --job-name=bandit3_b30
+#SBATCH --output=/home-mscluster/npather/orig_test3/disentanglement-pytorch/bandit3_b30.%A_%a.txt
 #SBATCH --partition=stampede
 #SBATCH --array=0-5
 python3 main.py \
 --aicrowd_challenge=false \
---name=bandit3 \
+--name=bandit3_b30 \
 --alg=BetaVAE \
 --traverse_z=true \
 --traverse_c=true \
@@ -33,8 +33,8 @@ python3 main.py \
 --use_bandit=true \
 --controlled_capacity_increase=false \
 --loss_txt=false \
---wandb_project_name=boltzSweep  \
---qma_alpha=0.1 \
+--wandb_project_name=boltzSweepseed  \
+--qma_alpha=0.01 \
 --boltzmann_lambda=30 \
 
 
