@@ -104,6 +104,19 @@ class VAE(BaseDisentangler):
             kld_loss = (kl_divergence_mu0_var1(mu, logvar) - capacity).abs() * self.w_kld
         return kld_loss
 
+    def _kld_loss_fn_anneal(self, mu, logvar):
+        if not self.controlled_capacity_increase:
+            kld_loss = kl_divergence_mu0_var1(mu, logvar) * self.w_kld
+        else:
+            """
+            Based on: Understanding disentangling in β-VAE
+            https://arxiv.org/pdf/1804.03599.pdf
+            """
+            capacity = torch.min(self.max_c, self.max_c * torch.tensor(self.iter) / self.iterations_c)
+            anneal = (kl_divergence_mu0_var1(mu, logvar) - capacity).abs()
+            kld_loss =  anneal* self.w_kld
+        return kld_loss, anneal
+
     def loss_fn(self, input_losses, **kwargs):
         x_recon = kwargs['x_recon']
         x_true = kwargs['x_true']
@@ -117,7 +130,7 @@ class VAE(BaseDisentangler):
         output_losses[c.RECON] = F.binary_cross_entropy(x_recon, x_true, reduction='sum') / bs * self.w_recon
         output_losses[c.TOTAL_VAE] += output_losses[c.RECON]
 
-        output_losses['kld'] = self._kld_loss_fn(mu, logvar)
+        output_losses['kld'], anneal = self._kld_loss_fn_anneal(mu, logvar)
         output_losses[c.TOTAL_VAE] += output_losses['kld']
 
         if c.FACTORVAE in self.loss_terms:
@@ -147,7 +160,7 @@ class VAE(BaseDisentangler):
             output_losses['vae_mmd'] = infovae_loss_fn(self.w_infovae, self.z_dim, self.device, **kwargs)
             output_losses[c.TOTAL_VAE] += output_losses['vae_mmd']
 
-        return output_losses
+        return output_losses, anneal
 
     def vae_base(self, losses, x_true1, x_true2, label1, label2):
         mu, logvar = self.model.encode(x=x_true1, c=label1)
@@ -155,8 +168,9 @@ class VAE(BaseDisentangler):
         x_recon = self.model.decode(z=z, c=label1)
         loss_fn_args = dict(x_recon=x_recon, x_true=x_true1, mu=mu, logvar=logvar, z=z,
                             x_true2=x_true2, label2=label2)
-        losses.update(self.loss_fn(losses, **loss_fn_args))
-        return losses, {'x_recon': x_recon, 'mu': mu, 'z': z, 'logvar': logvar}
+        loss_update, anneal = self.loss_fn(losses, **loss_fn_args)
+        losses.update(loss_update)
+        return losses, {'x_recon': x_recon, 'mu': mu, 'z': z, 'logvar': logvar}, anneal
 
     def train(self):
         while not self.training_complete():
@@ -170,7 +184,7 @@ class VAE(BaseDisentangler):
                 x_true2, label2 = next(iter(self.data_loader))
                 x_true2 = x_true2.to(self.device)
                 label2 = label2.to(self.device)
-                losses, params = self.vae_base(losses, x_true1, x_true2, label1, label2)
+                losses, params, anneal = self.vae_base(losses, x_true1, x_true2, label1, label2)
 
                 self.optim_G.zero_grad()
                 losses[c.TOTAL_VAE].backward(retain_graph=False)
@@ -178,7 +192,7 @@ class VAE(BaseDisentangler):
                 losses[c.TOTAL_VAE_EPOCH] = vae_loss_sum / self.internal_iter
 
                 self.optim_G.step()
-                self.log_save(self.internal_iter,input_image=x_true1, recon_image=params['x_recon'], loss=losses)
+                self.log_save(self.internal_iter,input_image=x_true1, recon_image=params['x_recon'], loss=losses, anneal=anneal)
                 del self.internal_iter
                 if self.loss_txt:
                     f1 = open(str(self.name)+'.recon.txt','a')

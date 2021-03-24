@@ -186,6 +186,7 @@ class BaseDisentangler(object):
             import wandb
             for key, value in kwargs.get('loss', dict()).items():
                     wandb.log({'loss.'+key: value, 'custom_step': internal_iter})
+            wandb.log({'anneal': anneal, 'custom_step': internal_iter})
 
         # don't log anything if running on the aicrowd_server
         if self.on_aicrowd_server:
