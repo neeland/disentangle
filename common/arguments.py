@@ -159,7 +159,8 @@ def get_args(sys_args):
     parser.add_argument('--pi_iter', default=1000, help='how often bandit policy pi is updated')
     parser.add_argument('--lr_bandit', default=1e-2, help='learning rate for bandit reward update')
     parser.add_argument('--log_iter', default=1, help='how often to log bandit')
-    parser.add_argument('--choose_arm', default=False, type=str2bool, help='Actually select arm of bandit')
+    parser.add_argument('--jeffreys', default=False, type=str2bool, help='use jeffreys prior; overides capacity controll')
+    parser.add_argument('--w_jeff', default=1.0, type=float, help='weighting the jeffreys factor')
     parser.add_argument('--qma_alpha', default=0.1, type=float, help='moving average coefficient for Q')
     parser.add_argument('--boltzmann_lambda', default=15, type=float, help='boltzmann constant for policy update')
 
