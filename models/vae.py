@@ -107,6 +107,12 @@ class VAE(BaseDisentangler):
     def _kld_loss_fn_anneal(self, mu, logvar):
         if self.jeffreys:
             self.controlled_capacity_increase = False
+            self.jenshann = False
+
+        if self.jenshann:
+            self.jefferys = False
+            self.controlled_capacity_increase = False
+            
 
         if not self.controlled_capacity_increase:
             
@@ -123,6 +129,13 @@ class VAE(BaseDisentangler):
             capacity = self.w_jeff*kl_divergence_mu0_var1(logvar, mu) #structured so that resultant kld_loss is a jefferys divergence
             kl_divergence = kl_divergence_mu0_var1(mu, logvar)
             kld_loss = (kl_divergence - capacity).abs() * self.w_kld # actually becomes a jeffrey's divergence if w_jeff = -1
+
+        if self.jenshann:
+            M = logvar + mu
+            capacity = self.w_js*kl_divergence_mu0_var1(logvar, M) #structured so that resultant kld_loss is a jefferys divergence
+            kl_divergence = 0.5*kl_divergence_mu0_var1(mu, M)
+            kld_loss = (kl_divergence - capacity).abs() * self.w_kld # actually becomes a jeffrey's divergence if w_jeff = -1
+
 
         return kld_loss, kl_divergence, capacity
 

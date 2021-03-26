@@ -180,6 +180,8 @@ class BaseDisentangler(object):
         self.use_bandit = args.use_bandit
         self.jeffreys = args.jeffreys
         self.w_jeff = args.w_jeff
+        self.jeffreys = args.jenshann
+        self.w_js = args.w_js
 
 
     def log_save(self,internal_iter, kl_divergence, capacity, **kwargs):
