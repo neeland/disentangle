@@ -2,7 +2,7 @@
 #SBATCH --job-name=jenshann
 #SBATCH --output=/home-mscluster/npather/disentangle/jenshann.%A_%a.txt
 #SBATCH --partition=stampede
-#SBATCH --array=0-2
+#SBATCH --array=0-5
 python3 main.py \
 --aicrowd_challenge=false \
 --name=jenshann \
@@ -24,9 +24,9 @@ python3 main.py \
 --max_iter=90000 \
 --iterations_c=90000 \
 --evaluate_iter=1000 \
---recon_iter=1000 \
---traverse_iter=1000 \
---print_iter=1000 \
+--recon_iter=10000 \
+--traverse_iter=10000 \
+--print_iter=10000 \
 --evaluation_metric mig sap_score irs dci beta_vae_sklearn factor_vae_metric \
 --alg=BetaVAE \
 --loss_terms \
