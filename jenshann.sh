@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash'
 #SBATCH --job-name=jenshann
 #SBATCH --output=/home-mscluster/npather/disentangle/jenshann.%A_%a.txt
 #SBATCH --partition=stampede
