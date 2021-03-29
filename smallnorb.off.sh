@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=sn_base
-#SBATCH --output=/home-mscluster/npather/disentangle/sn_base.%A_%a.txt
+#SBATCH --job-name=smallnorb.off
+#SBATCH --output=/home-mscluster/npather/disentangle/smallnorb.off.%A_%a.txt
 #SBATCH --partition=stampede
-#SBATCH --array=0-2
+#SBATCH --array=0-5
 python3 main.py \
 --aicrowd_challenge=false \
---name=sn_base \
+--name=smallnorb.off \
 --alg=BetaVAE \
 --traverse_z=true \
 --traverse_c=true \
@@ -22,7 +22,7 @@ python3 main.py \
 --lr_scheduler=ReduceLROnPlateau \
 --lr_scheduler_args mode=min factor=0.95 patience=1 min_lr=0.00005 \
 --max_iter=90000 \
---iterations_c=90000 \
+--iterations_c=1000 \
 --evaluate_iter=1000 \
 --recon_iter=1000 \
 --traverse_iter=1000 \
