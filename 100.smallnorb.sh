@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=smallnorb.50
-#SBATCH --output=/home-mscluster/npather/disentangle/smallnorb.50.%A_%a.txt
+#SBATCH --job-name=100.smallnorb
+#SBATCH --output=/home-mscluster/npather/disentangle/100.smallnorb.%A_%a.txt
 #SBATCH --partition=stampede
 #SBATCH --array=0-3
 python3 main.py \
 --aicrowd_challenge=false \
---name=smallnorb.50 \
+--name=100.smallnorb \
 --alg=BetaVAE \
 --traverse_z=true \
 --traverse_c=true \
