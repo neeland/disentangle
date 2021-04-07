@@ -10,7 +10,7 @@ python3 main.py \
 --traverse_z=true \
 --traverse_c=true \
 --dset_dir=/home-mscluster/npather/disentanglement-pytorch/data/smallnorb \
---dset_name=dsprites_full \
+--dset_name=smallnorb \
 --encoder=PadlessGaussianConv64 \
 --decoder=SimpleConv64 \
 --discriminator=SimpleDiscriminator \

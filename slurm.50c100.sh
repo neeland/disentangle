@@ -1,16 +1,16 @@
 #!/bin/bash
-#SBATCH --job-name=50.smallnorb
-#SBATCH --output=/home-mscluster/npather/disentangle/50.smallnorb.%A_%a.txt
+#SBATCH --job-name=50c100
+#SBATCH --output=/home-mscluster/npather/disentangle/50c100.%A_%a.txt
 #SBATCH --partition=stampede
-#SBATCH --array=0-3
+#SBATCH --array=0-2
 python3 main.py \
 --aicrowd_challenge=false \
---name=50.smallnorb \
+--name=50c100 \
 --alg=BetaVAE \
 --traverse_z=true \
 --traverse_c=true \
---dset_dir=/home-mscluster/npather/disentanglement-pytorch/data/smallnorb \
---dset_name=smallnorb \
+--dset_dir=/home-mscluster/npather/disentanglement-pytorch/data/dsprites \
+--dset_name=dsprites_full \
 --encoder=PadlessGaussianConv64 \
 --decoder=SimpleConv64 \
 --discriminator=SimpleDiscriminator \
@@ -24,20 +24,12 @@ python3 main.py \
 --max_iter=90000 \
 --iterations_c=45000 \
 --evaluate_iter=1000 \
---recon_iter=10000 \
---traverse_iter=10000 \
---print_iter=10000 \
---evaluation_metric mig sap_score irs dci beta_vae_sklearn factor_vae_metric \
+--evaluation_metric mig sap_score irs dci \
 --alg=BetaVAE \
 --loss_terms \
 --use_bandit=false \
 --controlled_capacity_increase=true \
---loss_txt=false \
---wandb_project_name=smallnorb \
---qma_alpha=0.001 \
---boltzmann_lambda=15 \
---jeffreys=false \
-
+--max_c=100 \
 
 
 

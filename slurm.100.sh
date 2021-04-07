@@ -3,6 +3,7 @@
 #SBATCH --output=/home-mscluster/npather/disentangle/100.%A_%a.txt
 #SBATCH --partition=stampede
 #SBATCH --array=0-2
+
 python3 main.py \
 --aicrowd_challenge=false \
 --name=100 \
@@ -17,7 +18,7 @@ python3 main.py \
 --z_dim=20 \
 --use_wandb=true \
 --w_kld=1.0 \
---w_tc=9.0 \
+--w_tc=1.0 \
 --lr_G=0.001 \
 --lr_scheduler=ReduceLROnPlateau \
 --lr_scheduler_args mode=min factor=0.95 patience=1 min_lr=0.00005 \

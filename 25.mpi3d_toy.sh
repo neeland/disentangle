@@ -1,16 +1,16 @@
 #!/bin/bash
-#SBATCH --job-name=75.smallnorb
-#SBATCH --output=/home-mscluster/npather/disentangle/75.smallnorb.%A_%a.txt
+#SBATCH --job-name=75.mpi3d_toy
+#SBATCH --output=/home-mscluster/npather/disentangle/75.mpi3d_toy.%A_%a.txt
 #SBATCH --partition=stampede
 #SBATCH --array=0-3
 python3 main.py \
 --aicrowd_challenge=false \
---name=75.smallnorb \
+--name=75.mpi3d_toy \
 --alg=BetaVAE \
 --traverse_z=true \
 --traverse_c=true \
---dset_dir=/home-mscluster/npather/disentanglement-pytorch/data/smallnorb \
---dset_name=smallnorb \
+--dset_dir=/home-mscluster/npather/disentanglement-pytorch/data/mpi3d_toy \
+--dset_name=mpi3d_toy \
 --encoder=PadlessGaussianConv64 \
 --decoder=SimpleConv64 \
 --discriminator=SimpleDiscriminator \
@@ -33,7 +33,7 @@ python3 main.py \
 --use_bandit=false \
 --controlled_capacity_increase=true \
 --loss_txt=false \
---wandb_project_name=smallnorb \
+--wandb_project_name=mpi3d_toy \
 --qma_alpha=0.001 \
 --boltzmann_lambda=15 \
 --jeffreys=false \

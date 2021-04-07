@@ -220,6 +220,7 @@ class BaseDisentangler(object):
 
         # if any evaluation is included in args.evaluate_metric, evaluate every evaluate_iter
         if self.evaluation_metric and is_time_for(self.iter, self.evaluate_iter):
+
             self.evaluate_results = evaluate_disentanglement_metric(self, metric_names=self.evaluation_metric)
             #if self.use_wandb:
                 #import wandb
@@ -331,7 +332,7 @@ class BaseDisentangler(object):
 
                         samples.append(sample)
                         gifs.append(sample)
-
+            '''
             if self.traverse_c:
                 num_classes = self.data_loader.dataset.num_classes(False)
                 for lid in range(self.num_labels):
@@ -351,7 +352,7 @@ class BaseDisentangler(object):
 
                         samples.append(sample)
                         gifs.append(sample)
-
+            '''
             samples = torch.cat(samples, dim=0).cpu()
             samples = torchvision.utils.make_grid(samples, nrow=num_cols)
 
