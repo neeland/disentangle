@@ -130,6 +130,11 @@ class VAE(BaseDisentangler):
             kl_divergence = kl_divergence_mu0_var1(mu, logvar)
             kld_loss = (kl_divergence - capacity).abs() * self.w_kld # actually becomes a jeffrey's divergence if w_jeff = -1
 
+        if self.jeff1:
+            capacity = self.w_jeff*kl_divergence_mu0_var1(logvar, mu) #structured so that resultant kld_loss is a jefferys divergence
+            kl_divergence = kl_divergence_mu0_var1(mu, logvar)
+            kld_loss = (kl_divergence* self.w_kld  - capacity).abs() # actually becomes a jeffrey's divergence if w_jeff = -1
+
         if self.jenshann:
             M = logvar + mu
             capacity = self.w_js*kl_divergence_mu0_var1(logvar, M) #structured so that resultant kld_loss is a jefferys divergence

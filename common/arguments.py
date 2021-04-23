@@ -165,6 +165,8 @@ def get_args(sys_args):
     parser.add_argument('--w_js', default=-0.5, type=float, help='weighting the jensen shannon')
     parser.add_argument('--qma_alpha', default=0.1, type=float, help='moving average coefficient for Q')
     parser.add_argument('--boltzmann_lambda', default=15, type=float, help='boltzmann constant for policy update')
+    parser.add_argument('--jeff1', default=False, type=str2bool, help='use jeffreys prior; overides capacity controll, jenshann')
+
 
     args = parser.parse_args(sys_args)
 
