@@ -21,8 +21,8 @@ python3 main.py \
 --lr_G=0.001 \
 --lr_scheduler=ReduceLROnPlateau \
 --lr_scheduler_args mode=min factor=0.95 patience=1 min_lr=0.00005 \
---max_iter=90000 \
---iterations_c=90000 \
+--max_iter=200000 \
+--iterations_c=200000 \
 --evaluate_iter=1000 \
 --recon_iter=10000 \
 --traverse_iter=10000 \
@@ -33,7 +33,7 @@ python3 main.py \
 --use_bandit=false \
 --controlled_capacity_increase=false \
 --loss_txt=false \
---wandb_project_name=smallnorb \
+--wandb_project_name=smallnorb200k \
 --jeffreys=false \
 --w_jeff=-1.0 \
 --jeff1=false \

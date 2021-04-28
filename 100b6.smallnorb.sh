@@ -33,7 +33,7 @@ python3 main.py \
 --use_bandit=false \
 --controlled_capacity_increase=false \
 --loss_txt=false \
---wandb_project_name=smallnorb \
+--wandb_project_name=smallnorb200k \
 --jeffreys=false \
 --w_jeff=-1.0 \
 --jeff1=false \
