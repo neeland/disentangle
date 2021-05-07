@@ -1,4 +1,0 @@
-  0%|          | 0/90000 [00:00<?, ?it/s]wandb: Network error (ConnectionError), entering retry loop. See wandb/debug-internal.log for full traceback.
-wandb: W&B API key is configured (use `wandb login --relogin` to force relogin)
-wandb: Network error (ConnectionError), entering retry loop. See wandb/debug-internal.log for full traceback.
-slurmstepd-mscluster93: error: *** JOB 116031 ON mscluster93 CANCELLED AT 2021-03-23T13:07:29 ***

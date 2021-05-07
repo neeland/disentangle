@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=100b6j1.smallnorb
-#SBATCH --output=/home-mscluster/npather/disentangle/100b6j1.smallnorb.%A_%a.txt
+#SBATCH --job-name=100b6j1.mpi3dtoy
+#SBATCH --output=/home-mscluster/npather/disentangle/100b6j1.mpi3dtoy.%A_%a.txt
 #SBATCH --partition=stampede
 #SBATCH --array=0-3
 python3 main.py \
 --aicrowd_challenge=false \
---name=100b6j1.smallnorb \
+--name=100b6j1.mpi3dtoy \
 --alg=BetaVAE \
 --traverse_z=true \
 --traverse_c=true \
@@ -21,8 +21,8 @@ python3 main.py \
 --lr_G=0.001 \
 --lr_scheduler=ReduceLROnPlateau \
 --lr_scheduler_args mode=min factor=0.95 patience=1 min_lr=0.00005 \
---max_iter=90000 \
---iterations_c=90000 \
+--max_iter=200000 \
+--iterations_c=200000 \
 --evaluate_iter=1000 \
 --recon_iter=10000 \
 --traverse_iter=10000 \
@@ -33,7 +33,7 @@ python3 main.py \
 --use_bandit=false \
 --controlled_capacity_increase=false \
 --loss_txt=false \
---wandb_project_name=smallnorb \
+--wandb_project_name=mpi3dtoy \
 --jeffreys=false \
 --w_jeff=-1.0 \
 --jeff1=true \
